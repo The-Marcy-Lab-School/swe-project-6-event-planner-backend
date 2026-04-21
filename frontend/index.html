@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventPlanner</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+
+  <!-- ====================================
+       Navigation
+  ==================================== -->
+  <nav id="navbar">
+    <div id="nav-brand">EventPlanner</div>
+
+    <div id="nav-links">
+      <button id="nav-all-events-btn" class="nav-btn">All Events</button>
+      <button id="nav-create-event-btn" class="nav-btn hidden">Create Event</button>
+      <button id="nav-my-events-btn" class="nav-btn hidden">My Events</button>
+      <button id="nav-my-rsvps-btn" class="nav-btn hidden">My RSVPs</button>
+      <button id="nav-account-btn" class="nav-btn hidden">Account</button>
+    </div>
+
+    <div id="nav-auth">
+      <span id="nav-username"></span>
+      <button id="nav-login-btn" class="btn-secondary">Log In</button>
+      <button id="nav-register-btn" class="btn-primary">Register</button>
+      <button id="nav-logout-btn" class="btn-secondary hidden">Log Out</button>
+    </div>
+  </nav>
+
+  <main id="main-content">
+
+    <!-- ====================================
+         Auth Overlay / Modal
+    ==================================== -->
+    <div id="auth-overlay" class="hidden">
+      <div id="auth-modal">
+        <button id="close-auth-btn" aria-label="Close">&times;</button>
+
+        <div id="login-panel">
+          <h2>Log In</h2>
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-username">Username</label>
+              <input type="text" id="login-username" autocomplete="username" required />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" autocomplete="current-password" required />
+            </div>
+            <p id="login-error" class="error hidden"></p>
+            <button type="submit" class="btn-primary full-width">Log In</button>
+          </form>
+          <p class="switch-text">
+            Don't have an account?
+            <button id="switch-to-register-btn" class="link-btn">Register</button>
+          </p>
+        </div>
+
+        <div id="register-panel" class="hidden">
+          <h2>Create Account</h2>
+          <form id="register-form">
+            <div class="form-group">
+              <label for="register-username">Username</label>
+              <input type="text" id="register-username" autocomplete="username" required />
+            </div>
+            <div class="form-group">
+              <label for="register-password">Password</label>
+              <input type="password" id="register-password" autocomplete="new-password" required />
+            </div>
+            <p id="register-error" class="error hidden"></p>
+            <button type="submit" class="btn-primary full-width">Create Account</button>
+          </form>
+          <p class="switch-text">
+            Already have an account?
+            <button id="switch-to-login-btn" class="link-btn">Log In</button>
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================================
+         All Events View
+    ==================================== -->
+    <section id="all-events-view" class="view">
+      <div id="events-header">
+        <h1>Upcoming Events</h1>
+        <div id="filters">
+          <select id="event-type-filter">
+            <option value="">All Types</option>
+            <option value="conference">Conference</option>
+            <option value="workshop">Workshop</option>
+            <option value="social">Social</option>
+            <option value="networking">Networking</option>
+            <option value="concert">Concert</option>
+            <option value="sports">Sports</option>
+            <option value="fundraiser">Fundraiser</option>
+            <option value="other">Other</option>
+          </select>
+          <input type="number" id="min-capacity-filter" placeholder="Min capacity" min="1" />
+          <button id="apply-filters-btn" class="btn-primary">Filter</button>
+          <button id="clear-filters-btn" class="btn-secondary">Clear</button>
+        </div>
+      </div>
+      <p id="events-error" class="error hidden"></p>
+      <div id="events-grid" class="event-grid"></div>
+    </section>
+
+    <!-- ====================================
+         Create Event View
+    ==================================== -->
+    <section id="create-event-view" class="view hidden">
+      <h1>Create an Event</h1>
+      <form id="create-event-form">
+        <div class="form-group">
+          <label for="create-title">Title *</label>
+          <input type="text" id="create-title" required />
+        </div>
+        <div class="form-group">
+          <label for="create-description">Description</label>
+          <textarea id="create-description" rows="3" placeholder="Optional description..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="create-date">Date *</label>
+            <input type="date" id="create-date" required />
+          </div>
+          <div class="form-group">
+            <label for="create-location">Location *</label>
+            <input type="text" id="create-location" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="create-event-type">Event Type *</label>
+            <select id="create-event-type" required>
+              <option value="">Select a type</option>
+              <option value="conference">Conference</option>
+              <option value="workshop">Workshop</option>
+              <option value="social">Social</option>
+              <option value="networking">Networking</option>
+              <option value="concert">Concert</option>
+              <option value="sports">Sports</option>
+              <option value="fundraiser">Fundraiser</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="create-max-capacity">Max Capacity *</label>
+            <input type="number" id="create-max-capacity" min="1" required />
+          </div>
+        </div>
+        <p id="create-event-error" class="error hidden"></p>
+        <button type="submit" class="btn-primary">Create Event</button>
+      </form>
+    </section>
+
+    <!-- ====================================
+         Edit Event View
+    ==================================== -->
+    <section id="edit-event-view" class="view hidden">
+      <h1>Edit Event</h1>
+      <form id="edit-event-form">
+        <input type="hidden" id="edit-event-id" />
+        <div class="form-group">
+          <label for="edit-title">Title *</label>
+          <input type="text" id="edit-title" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-description">Description</label>
+          <textarea id="edit-description" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-date">Date *</label>
+            <input type="date" id="edit-date" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-location">Location *</label>
+            <input type="text" id="edit-location" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-event-type">Event Type *</label>
+            <select id="edit-event-type" required>
+              <option value="">Select a type</option>
+              <option value="conference">Conference</option>
+              <option value="workshop">Workshop</option>
+              <option value="social">Social</option>
+              <option value="networking">Networking</option>
+              <option value="concert">Concert</option>
+              <option value="sports">Sports</option>
+              <option value="fundraiser">Fundraiser</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-max-capacity">Max Capacity *</label>
+            <input type="number" id="edit-max-capacity" min="1" required />
+          </div>
+        </div>
+        <p id="edit-event-error" class="error hidden"></p>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Save Changes</button>
+          <button type="button" id="cancel-edit-btn" class="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ====================================
+         My Events View
+    ==================================== -->
+    <section id="my-events-view" class="view hidden">
+      <h1>My Events</h1>
+      <p id="my-events-error" class="error hidden"></p>
+      <div id="my-events-grid" class="event-grid"></div>
+    </section>
+
+    <!-- ====================================
+         My RSVPs View
+    ==================================== -->
+    <section id="my-rsvps-view" class="view hidden">
+      <h1>My RSVPs</h1>
+      <p id="my-rsvps-error" class="error hidden"></p>
+      <div id="my-rsvps-grid" class="event-grid"></div>
+    </section>
+
+    <!-- ====================================
+         Account View
+    ==================================== -->
+    <section id="account-view" class="view hidden">
+      <h1>Account Settings</h1>
+      <p id="account-username-display"></p>
+
+      <div class="account-section">
+        <h2>Update Password</h2>
+        <form id="update-password-form">
+          <div class="form-group">
+            <label for="new-password">New Password</label>
+            <input type="password" id="new-password" autocomplete="new-password" required />
+          </div>
+          <p id="update-password-error" class="error hidden"></p>
+          <p id="update-password-success" class="success hidden"></p>
+          <button type="submit" class="btn-primary">Update Password</button>
+        </form>
+      </div>
+
+      <div class="account-section danger-zone">
+        <h2>Danger Zone</h2>
+        <p>Permanently delete your account. All your events and RSVPs will be removed.</p>
+        <p id="delete-account-error" class="error hidden"></p>
+        <button id="delete-account-btn" class="btn-danger">Delete My Account</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
