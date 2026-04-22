@@ -44,16 +44,18 @@ This project puts you in that position. You'll build the **entire backend** for 
   - [Users](#users)
   - [Events](#events)
   - [RSVPs](#rsvps)
-- [Grading Checklist](#grading-checklist)
-  - [Database](#database)
-  - [Authentication](#authentication)
-  - [User Account Management](#user-account-management)
-  - [Events — Read](#events--read)
-  - [Events — Write](#events--write)
-  - [RSVPs](#rsvps-1)
-  - [Error Handling](#error-handling)
-  - [Code Quality](#code-quality)
 - [AI Usage Documentation](#ai-usage-documentation)
+  - [AI Reflection](#ai-reflection)
+- [Grading Checklist (36 points)](#grading-checklist-36-points)
+  - [Database (6 points)](#database-6-points)
+  - [Authentication (6 points)](#authentication-6-points)
+  - [User Account Management (3 points)](#user-account-management-3-points)
+  - [Events — Read (2 points)](#events--read-2-points)
+  - [Events — Write (4 points)](#events--write-4-points)
+  - [RSVPs (4 points)](#rsvps-4-points)
+  - [Error Handling (6 points)](#error-handling-6-points)
+  - [Code Quality (4 points)](#code-quality-4-points)
+  - [AI Usage Documentation (1 points)](#ai-usage-documentation-1-points)
 
 ---
 
@@ -573,9 +575,49 @@ curl -s http://localhost:8080/api/users/1/rsvps | jq
 
 ---
 
-## Grading Checklist
+## AI Usage Documentation
 
-### Database
+You are **encouraged and expected** to use AI tools (Claude, ChatGPT, Copilot, etc.) as you work through this project. Document **1 specific example** of how you used AI. Be specific and answer the following questions:
+
+**1. What did you ask the AI to help you with, and why did you choose to use AI for that specific task?**
+Be specific — don't just say "I was stuck." Describe the exact problem you were facing and walk through your thinking: Why was this a good moment to turn to AI? What made it different from something you'd Google, ask a classmate, or work through yourself?
+
+**2. How did you evaluate whether the AI's output was correct or useful before using it?**
+AI can be wrong — and confidently wrong. Before you used what it gave you, how did you check it? Did you run it and test edge cases? Did you read through it line by line and make sure you could explain it? If you discovered the output wasn't quite right, describe that too — those are actually your strongest examples.
+
+**3. How did what the AI produced differ from what you ultimately used, and what does that tell you about your own understanding of the problem?**
+Your final solution probably didn't look exactly like what the AI gave you. What did you change, and why? If you used the output as-is, that's worth reflecting on too — can you explain exactly why it worked? Your answer here is the clearest window into what you actually understand.
+
+Here is an example response:
+
+```md
+**1. What did you ask the AI to help you with, and why did you choose to use AI for that specific task?**
+When I tried to register a new user in my app I got this error in my terminal:
+
+```error: duplicate key value violates unique constraint "users_username_key"```
+
+I had never seen that error before and I didn't fully understand what it was telling me. I knew the word "duplicate" meant something was repeated, but I didn't know what "unique constraint" meant or where it was coming from — I didn't remember writing anything like that. I also wasn't sure if this was a database problem, a server problem, or something wrong with my code logic. I decided to use AI because I needed someone to explain what the error actually meant before I could even think about how to fix it.
+
+**2. How did you evaluate whether the AI's output was correct or useful before using it?**
+The AI explained that a unique constraint is a rule you can set on a database column that prevents two rows from having the same value — and that I had probably set one on the `username` column when I created my users table, which made sense because you don't want two accounts sharing a `username`. It told me there were two ways to handle this: I could catch the error in my Express route and send back a useful message to the user, or I could query the database first to check if the `username` already existed before trying to insert. Before I did anything, I went back and looked at my CREATE TABLE statement and confirmed that yes, I had written `username TEXT UNIQUE` — I just hadn't connected that to what the error was saying. That step felt important because I wanted to verify the AI's explanation against my actual code rather than just taking its word for it.
+
+**3. How did what the AI produced differ from what you ultimately used, and what does that tell you about your own understanding of the problem?**
+The AI showed me a generic example of how to catch the error using a try/catch block and check the error code — PostgreSQL gives duplicate key violations the error code 23505. However, in the reference applications, they just use a generic error handler that sends back a 500 for all SQL errors which I just kept as is. I understand that I could make specific error messages for every kind of SQL error but instead I just decided to have a catch all since the user doesn't need to know what broke, just that it was a 5xx error. I realize now that the error message was really clear and that I need to spend more time understanding what the error is saying before jumping to fix it.
+```
+
+### AI Reflection
+
+**1. What did you ask the AI to help you with, and why did you choose to use AI for that specific task?**
+
+**2. How did you evaluate whether the AI's output was correct or useful before using it?**
+
+**3. How did what the AI produced differ from what you ultimately used, and what does that tell you about your own understanding of the problem?**
+
+---
+
+## Grading Checklist (36 points)
+
+### Database (6 points)
 - [ ] `users` table matches the required schema
 - [ ] `events` table matches the required schema, with FK to `users`
 - [ ] `rsvps` junction table matches the required schema, with FKs to both `users` and `events`
@@ -583,7 +625,7 @@ curl -s http://localhost:8080/api/users/1/rsvps | jq
 - [ ] `UNIQUE (user_id, event_id)` constraint exists on `rsvps`
 - [ ] Database is seeded with at least 3 users and several events across multiple types
 
-### Authentication
+### Authentication (6 points)
 - [ ] Passwords are hashed with `bcrypt` — plain-text passwords are never stored
 - [ ] `POST /api/auth/register` creates a user, starts a session, returns `{ user_id, username }`
 - [ ] `POST /api/auth/login` validates credentials, starts a session, returns `{ user_id, username }`
@@ -591,28 +633,28 @@ curl -s http://localhost:8080/api/users/1/rsvps | jq
 - [ ] `DELETE /api/auth/logout` clears the session
 - [ ] The logged-in user's ID is stored in the session cookie
 
-### User Account Management
+### User Account Management (3 points)
 - [ ] `PATCH /api/users/:user_id` updates the user's password (auth required)
 - [ ] `DELETE /api/users/:user_id` deletes the user's account (auth required)
 - [ ] Both routes return `403` if the requesting user does not own the account
 
-### Events — Read
+### Events — Read (2 points)
 - [ ] `GET /api/events` returns all events with `username` (via JOIN) and `rsvp_count` (via LEFT JOIN + COUNT)
 - [ ] `GET /api/users/:user_id/events` returns that user's created events
 
-### Events — Write
+### Events — Write (4 points)
 - [ ] `POST /api/events` creates an event owned by the session user (auth required)
 - [ ] `PATCH /api/events/:event_id` updates the event (auth required, owner only)
 - [ ] `DELETE /api/events/:event_id` deletes the event (auth required, owner only)
 - [ ] Both mutation routes fetch the event first and return `403` if the session user doesn't own it
 
-### RSVPs
+### RSVPs (4 points)
 - [ ] `POST /api/events/:event_id/rsvps` RSVPs the session user to the event (auth required)
 - [ ] Duplicate RSVPs do not cause a server error (`ON CONFLICT DO NOTHING`)
 - [ ] `DELETE /api/events/:event_id/rsvps` removes the session user's RSVP (auth required)
 - [ ] `GET /api/users/:user_id/rsvps` returns full event objects for all of that user's RSVPs
 
-### Error Handling
+### Error Handling (6 points)
 - [ ] `400` is returned for missing or invalid required fields
 - [ ] `401` is returned when a protected route is accessed without a valid session
 - [ ] `403` is returned when a user attempts to modify a resource they do not own
@@ -620,20 +662,11 @@ curl -s http://localhost:8080/api/users/1/rsvps | jq
 - [ ] A global error handler (`app.use((err, req, res, next) => {...})`) catches unexpected errors and returns `500`
 - [ ] No unhandled promise rejections crash the server — all async controllers use `try/catch`
 
-### Code Quality
+### Code Quality (4 points)
 - [ ] Server follows the MVC structure: `controllers/`, `models/`, `middleware/`
 - [ ] All SQL lives in model functions — controllers contain no direct database queries
 - [ ] `checkAuthentication` middleware is used on protected routes (not repeated inline)
 - [ ] Sensitive config (session secret, DB credentials) lives in `.env`, not hardcoded in source
 
----
-
-## AI Usage Documentation
-
-You are encouraged to use AI tools (Claude, ChatGPT, Copilot, etc.) as you work through this project. Document at least **3 specific examples** of how you used AI below. Be specific — note what you asked, what it produced, and what you changed or verified yourself.
-
-| #   | What I asked AI to help with | What I changed or verified myself |
-| --- | ---------------------------- | --------------------------------- |
-| 1   |                              |                                   |
-| 2   |                              |                                   |
-| 3   |                              |                                   |
+### AI Usage Documentation (1 points)
+- [ ] Provided 1 example of AI usage and addressed all three reflection questions.
