@@ -67,15 +67,7 @@ This project puts you in that position. You'll build the **entire backend** for 
 
 **1. Fork and clone this repo.**
 
-**2. Install and run the frontend dev server:**
-```sh
-cd frontend
-npm install
-npm run dev
-```
-The frontend will be available at `http://localhost:5173`. API requests are proxied to `http://localhost:8080`. You'll see a blank page — that's expected until your server exists.
-
-**3. Create the `server/` directory** with this file structure:
+**2. Create the `server/` directory** with this file structure:
 
 ```
 server/
@@ -99,7 +91,7 @@ server/
     └── rsvpControllers.js
 ```
 
-**4. Install server dependencies:**
+**3. Install server dependencies:**
 ```sh
 cd server
 npm init -y
@@ -107,7 +99,16 @@ npm install express pg bcrypt cookie-session dotenv
 npm install --save-dev nodemon
 ```
 
-**5. Create your `.env` file.** Copy the provided `.env.template` and fill in your local PostgreSQL credentials and a session secret string of your choice.
+**4. Create the database:**
+```sh
+# Mac
+createdb event_planner_db
+
+# Windows
+sudo -u postgres createdb event_planner_db
+```
+
+**5. Create your `.env` file**. Then fill in your local PostgreSQL credentials and a session secret string of your choice.
 
 ---
 
@@ -115,14 +116,14 @@ npm install --save-dev nodemon
 
 These are the two applications you built during lecture. They use the same architecture, patterns, and libraries that your server will use. **Study them.** Most of your boilerplate (`pool.js`, middleware, `index.js` structure) can be adapted directly from these apps. The real work is in `seed.js`, the models, and the controllers — where you'll need to apply the patterns to this project's specific schema and endpoints.
 
-**`lecture-code/6-13-production-deployment/`** — Your primary reference. A complete MVC server with users and bookmarks. Look at:
+[https://github.com/The-Marcy-Lab-School/6-13-production-deployment](https://github.com/The-Marcy-Lab-School/6-13-production-deployment) — Your primary reference. A complete MVC server with users and bookmarks. Look at:
 - `server/db/` — `pool.js` and `seed.js` (two-table schema with a foreign key)
 - `server/models/` — `userModel.js` (bcrypt, CRUD) and `bookmarkModel.js` (CRUD with a JOIN for usernames)
 - `server/controllers/` — auth flow, ownership checks (comparing URL params to the session), error responses
 - `server/middleware/` — `checkAuthentication.js` and `logRoutes.js`
 - `server/index.js` — how everything is wired together
 
-**`lecture-code/swe-casestudy-6-social-bookmark-manager/`** — Your reference for the RSVP feature. This app adds a `bookmark_likes` junction table on top of the same bookmark structure. Look at:
+[https://github.com/The-Marcy-Lab-School/swe-casestudy-6-social-bookmark-manager](https://github.com/The-Marcy-Lab-School/swe-casestudy-6-social-bookmark-manager) — Your reference for the RSVP feature. This app adds a `bookmark_likes` junction table on top of the same bookmark structure. Look at:
 - `server/db/seed.js` — three-table schema, the junction table with `UNIQUE` constraint
 - `server/models/bookmarkModel.js` — `LEFT JOIN` + `COUNT` + `GROUP BY` for like counts, `ON CONFLICT DO NOTHING` for idempotent likes
 
@@ -132,7 +133,7 @@ These are the two applications you built during lecture. They use the same archi
 
 Build `db/pool.js` and `db/seed.js`. You can't do anything else until you have a working database with seeded data.
 
-Create a new PostgreSQL database (e.g. `event_planner_db`), then implement your seed file to create the schema and insert test data. See `6-13`'s `db/` directory for the pattern.
+Implement your seed file to create the schema and insert test data. See `6-13`'s `db/` directory for the pattern.
 
 ### Schema
 
@@ -175,6 +176,8 @@ Insert at least 3 users and a handful of events spread across multiple `event_ty
 
 ### Phase 1 Success Checks
 
+You will know that you've successfully set up your database if you can run the seed file and then select data from your tables:
+
 ```sh
 node db/seed.js
 ```
@@ -199,28 +202,28 @@ Build `userModel.js`, `eventModel.js`, and `rsvpModel.js`. Each model exports fu
 Read the [API Contract](#api-contract) below to understand what data each endpoint needs to return. Your models are the functions that provide that data. Work backwards: look at an endpoint's response shape, then write the SQL query that produces it.
 
 - `userModel.js` and the basic CRUD in `eventModel.js` follow the same patterns as the models in `6-13`.
-- The `rsvps` table mirrors `bookmark_likes` in the case study. The model patterns for creating, deleting, and querying likes translate directly to RSVPs.
+- The `rsvps` table mirrors `bookmark_likes` in the case study. The patterns for creating, deleting, and querying likes translate directly to managing RSVPs.
 - The `GET /api/events` response includes `username` and `rsvp_count` — look at how the case study's `bookmarkModel.list()` achieves the same thing with `bookmark_likes`.
 
 ### Phase 2 Success Checks
 
-Create a temporary `server/test.js` to verify your models can query the database:
+Verify your models can query the database by creating a temporary `server/test.js` that imports and invokes your model methods:
 
 ```js
 // server/test.js — delete after testing
 require('dotenv').config();
 const eventModel = require('./models/eventModel');
 
-eventModel.list()
-  .then((rows) => {
-    console.log(`eventModel.list() returned ${rows.length} events`);
-    console.log('First event:', rows[0]);
-  })
-  .catch(console.error)
-  .finally(() => process.exit());
-```
+const test = async () => {
+  console.log(await eventModel.list()); // list all events with username and rsvp_count
 
-The first event logged should include `username` and `rsvp_count`. If it doesn't, your JOIN isn't right yet. Test your other models the same way.
+  // more model methods...
+
+  // Kill the process (the open pool connections) after running queries
+  process.exit();
+}
+test();
+```
 
 ---
 
@@ -255,7 +258,7 @@ curl -s http://localhost:8080/api/auth/me -b cookies.txt | jq
 curl -s http://localhost:8080/api/events | jq
 ```
 
-Then work through the full curl suite in the [API Contract](#api-contract) to verify every endpoint. When they all pass, open the frontend at `http://localhost:5173` — if your server satisfies the contract, the full UI should work.
+Then work through the full curl suite in the [API Contract](#api-contract) to verify every endpoint. When they all pass, open the frontend at `http://localhost:8080` — if your server satisfies the contract, the full frontend UI should work.
 
 ---
 
