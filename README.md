@@ -45,7 +45,7 @@ This project puts you in that position. You'll build the **entire backend** for 
   - [Events](#events)
   - [RSVPs](#rsvps)
 - [AI Usage Documentation](#ai-usage-documentation)
-  - [AI Reflection](#ai-reflection)
+  - [Example Documentation](#example-documentation)
 - [Grading Checklist (36 points)](#grading-checklist-36-points)
   - [Database (6 points)](#database-6-points)
   - [Authentication (6 points)](#authentication-6-points)
@@ -577,41 +577,31 @@ curl -s http://localhost:8080/api/users/1/rsvps | jq
 
 ## AI Usage Documentation
 
-You are **encouraged and expected** to use AI tools (Claude, ChatGPT, Copilot, etc.) as you work through this project. Document **1 specific example** of how you used AI. Be specific and answer the following questions:
+You are **encouraged and expected** to use AI tools (Claude, ChatGPT, Copilot, etc.) as you work through this project. 
 
-**1. What did you ask the AI to help you with, and why did you choose to use AI for that specific task?**
-Be specific — don't just say "I was stuck." Describe the exact problem you were facing and walk through your thinking: Why was this a good moment to turn to AI? What made it different from something you'd Google, ask a classmate, or work through yourself?
+Inside of the [AI_DOCUMENTATION.md](./AI_DOCUMENTATION.md) file, document **1 specific example** of how you used AI. 
+
+Be specific and answer the following questions:
+
+**1. What did you ask the AI to help you with (include the prompt), and why did you choose to use AI for that specific task?**
+
+Be specific — don't just say "I was stuck." Describe the exact problem you were facing, the prompt you used, and walk through your thinking: Why was this a good moment to turn to AI? What made it different from something you'd Google, ask a classmate, or work through yourself?
 
 **2. How did you evaluate whether the AI's output was correct or useful before using it?**
+
 AI can be wrong — and confidently wrong. Before you used what it gave you, how did you check it? Did you run it and test edge cases? Did you read through it line by line and make sure you could explain it? If you discovered the output wasn't quite right, describe that too — those are actually your strongest examples.
 
 **3. How did what the AI produced differ from what you ultimately used, and what does that tell you about your own understanding of the problem?**
+
 Your final solution probably didn't look exactly like what the AI gave you. What did you change, and why? If you used the output as-is, that's worth reflecting on too — can you explain exactly why it worked? Your answer here is the clearest window into what you actually understand.
 
-Here is an example response:
+**4. What did you learn from using AI in this way?**
 
-```md
-**1. What did you ask the AI to help you with, and why did you choose to use AI for that specific task?**
-When I tried to register a new user in my app I got this error in my terminal:
+Perhaps you learned a new concept or a new strategy for using AI. Share your learnings and what you will be taking away from this process!
 
-```error: duplicate key value violates unique constraint "users_username_key"```
+### Example Documentation
 
-I had never seen that error before and I didn't fully understand what it was telling me. I knew the word "duplicate" meant something was repeated, but I didn't know what "unique constraint" meant or where it was coming from — I didn't remember writing anything like that. I also wasn't sure if this was a database problem, a server problem, or something wrong with my code logic. I decided to use AI because I needed someone to explain what the error actually meant before I could even think about how to fix it.
-
-**2. How did you evaluate whether the AI's output was correct or useful before using it?**
-The AI explained that a unique constraint is a rule you can set on a database column that prevents two rows from having the same value — and that I had probably set one on the `username` column when I created my users table, which made sense because you don't want two accounts sharing a `username`. It told me there were two ways to handle this: I could catch the error in my Express route and send back a useful message to the user, or I could query the database first to check if the `username` already existed before trying to insert. Before I did anything, I went back and looked at my CREATE TABLE statement and confirmed that yes, I had written `username TEXT UNIQUE` — I just hadn't connected that to what the error was saying. That step felt important because I wanted to verify the AI's explanation against my actual code rather than just taking its word for it.
-
-**3. How did what the AI produced differ from what you ultimately used, and what does that tell you about your own understanding of the problem?**
-The AI showed me a generic example of how to catch the error using a try/catch block and check the error code — PostgreSQL gives duplicate key violations the error code 23505. However, in the reference applications, they just use a generic error handler that sends back a 500 for all SQL errors which I just kept as is. I understand that I could make specific error messages for every kind of SQL error but instead I just decided to have a catch all since the user doesn't need to know what broke, just that it was a 5xx error. I realize now that the error message was really clear and that I need to spend more time understanding what the error is saying before jumping to fix it.
-```
-
-### AI Reflection
-
-**1. What did you ask the AI to help you with, and why did you choose to use AI for that specific task?**
-
-**2. How did you evaluate whether the AI's output was correct or useful before using it?**
-
-**3. How did what the AI produced differ from what you ultimately used, and what does that tell you about your own understanding of the problem?**
+Check out [AI_DOCUMENTATION_EXAMPLE.md](./AI_DOCUMENTATION_EXAMPLE.md) to see the kind of detail that we're looking for.
 
 ---
 
@@ -669,4 +659,4 @@ The AI showed me a generic example of how to catch the error using a try/catch b
 - [ ] Sensitive config (session secret, DB credentials) lives in `.env`, not hardcoded in source
 
 ### AI Usage Documentation (1 points)
-- [ ] Provided 1 example of AI usage and addressed all three reflection questions.
+- [ ] Provided 1 example of AI usage and addressed all reflection questions.
